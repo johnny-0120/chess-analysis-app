@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西洋棋復盤工具</title>
+    
+    <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        .highlight-best-move {
+        background-color: var(--green-highlight);
+        box-shadow: inset 0 0 3px 2px var(--green-highlight);
+        }
+        
+/* 【新】總結區塊的樣式 */
+        #analysis-summary {
+            display: none; /* 預設隱藏 */
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        #analysis-summary h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+        .summary-player-section {
+            margin-bottom: 10px;
+        }
+        .summary-player-section strong {
+            font-size: 1.1em;
+        }
+        .summary-player-section ul {
+            list-style-type: none;
+            padding-left: 10px;
+            margin: 5px 0 0 0;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+/* 【新】加入這個樣式 (藍色高亮) */
+        .highlight-actual-move {
+            background-color: rgba(59, 130, 246, 0.3); /* 淺藍色 */
+            box-shadow: inset 0 0 3px 2px rgba(59, 130, 246, 0.3);
+        }
+
+        :root {
+            --bg-color: #f4f4f5;
+            --card-bg: #ffffff;
+            --border-color: #e4e4e7;
+            --text-primary: #18181b;
+            --text-secondary: #52525b;
+            --blue-light: #dbeafe;
+            --red-light: #ffe4e6;
+            --orange-light: #fffbeb;
+            --yellow-light: #fefce8;
+            --green-highlight: rgba(34, 197, 94, 0.4); /* 【新】高亮顏色 */
+        }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; align-items: flex-start; padding: 24px; color: var(--text-primary); }
+        #app-container { display: flex; flex-wrap: wrap; gap: 24px; max-width: 1000px; width: 100%; }
+        #main-content { flex: 0 0 410px; }
+        #board-card { background-color: var(--card-bg); border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        
+        /* 【修正】ID 改回 myBoard */
+        #myBoard {
+            width: 400px;
+            margin-bottom: 16px;
+        }
+        
+        /* 【新】高亮方格的樣式 */
+        .highlight-best-move {
+            background-color: var(--green-highlight);
+            box-shadow: inset 0 0 3px 2px var(--green-highlight);
+        }
+
+        #input-section { background-color: var(--card-bg); border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-top: 20px; }
+        #pgn-text-input { width: 98%; min-height: 80px; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; }
+        #analyze-button { font-size: 1.1em; padding: 10px 16px; margin-top: 10px; width: 100%; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        #analyze-button:hover { background-color: #1d4ed8; }
+        #sidebar { flex: 1; min-width: 300px; }
+        #analysis-controls { background-color: var(--card-bg); border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        #win-rate-text { font-size: 1.2em; font-weight: bold; margin-bottom: 8px; text-align: center; color: var(--text-secondary); }
+        #win-rate-bar-container { width: 100%; height: 24px; background-color: #27272a; border-radius: 4px; overflow: hidden; border: 1px solid #555; display: flex; }
+        #white-bar { width: 50%; height: 100%; background-color: #f9fafb; transition: width 0.3s ease-out; }
+        #move-controls { margin: 16px 0; display: flex; gap: 10px; }
+        #move-controls button { font-size: 1em; padding: 8px 12px; flex: 1; border: 1px solid var(--border-color); background-color: var(--card-bg); border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        #move-controls button:hover { background-color: var(--bg-color); }
+        #analysis-container { border: 1px solid var(--border-color); width: auto; height: 400px; overflow-y: auto; border-radius: 6px; }
+        .move-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .move-item:last-child { border-bottom: none; }
+        .move-item:hover { background-color: var(--bg-color); }
+        .move-item.selected { background-color: var(--blue-light); }
+        .move-header { display: flex; justify-content: space-between; align-items: center; }
+        .move-header b { font-size: 1.1em; }
+        .win-rate { font-size: 0.9em; color: var(--text-secondary); }
+        .analysis-detail { margin-top: 6px; font-size: 0.9em; padding: 6px 8px; border-radius: 4px; }
+        .move-item.inaccuracy .analysis-detail { background-color: var(--yellow-light); border: 1px solid #fde047; }
+        .move-item.mistake .analysis-detail { background-color: var(--orange-light); border: 1px solid #fcd34d; }
+        .move-item.blunder .analysis-detail { background-color: var(--red-light); border: 1px solid #fda4af; }
+        /* 【新】加入這個樣式 (綠色文字) */
+        .analysis-detail-good {
+            margin-top: 6px;
+            font-size: 0.9em;
+            color: #22c55e; /* 綠色文字 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <div id="main-content">
+            <div id="board-card">
+                <div id="myBoard" style="width: 400px"></div>
+            </div>
+            <div id="input-section">
+                <h4>1. 上傳你的 PGN 檔案</h4>
+                <input type="file" id="pgn-file-input" accept=".pgn">
+                <hr style="margin: 15px 0;">
+                <h4>2. 或直接貼上 PGN 內容</h4>
+                <textarea id="pgn-text-input" placeholder="在這裡貼上 PGN..."></textarea>
+                <button id="analyze-button">開始分析</button>
+            </div>
+        </div>
+        <div id="sidebar">
+            <div id="analysis-controls">
+                <div id="win-rate-text">白方: 50% | 黑方: 50%</div>
+                <div id="win-rate-bar-container">
+                    <div id="white-bar"></div>
+                </div>
+                <div id="move-controls">
+                    <button id="prev-move">&lt; 上一手</button>
+                    <button id="next-move">下一手 &gt;</button>
+                    <button id="flip-board-button">翻轉棋盤</button>
+                </div>
+                <div id="analysis-summary">
+                </div>
+                <div id="analysis-container">
+                    <h3>分析結果</h3>
+                    <p style="padding: 10px; color: var(--text-secondary);">請上傳 PGN 檔案或貼上內容，然後點擊「開始分析」。</p>
+                </div>
+            </div>
+        </div>
+    </div> 
+    
+    <script src="js/jquery.min.js"></script>
+    <script src="js/chessboard-1.0.0.min.js"></script>
+    
+    <script src="app.js"></script>
+
+</body>
+</html>
