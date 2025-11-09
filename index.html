@@ -23,10 +23,9 @@
             --red-light: #ffe4e6;
             --orange-light: #fffbeb;
             --yellow-light: #fefce8;
-            --green-highlight: rgba(34, 197, 94, 0.4);
         }
         html, body {
-            height: 100%; /* 讓 body 可以撐滿高度 */
+            height: 100%;
             margin: 0;
             padding: 0;
         }
@@ -34,8 +33,8 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: var(--bg-color);
             display: flex;
-            justify-content: center; /* 水平置中 */
-            align-items: center; /* 垂直置中 (如果內容不高) */
+            justify-content: center;
+            align-items: center;
             padding: 20px;
             color: var(--text-primary);
             min-height: 100vh;
@@ -50,34 +49,34 @@
             display: flex;
             gap: 20px;
             width: 100%;
-            max-width: 1400px; /* 增加最大寬度以容納三欄 */
-            height: calc(100vh - 40px); /* 佔滿視窗高度減去 padding */
-            align-items: stretch; /* 讓三欄等高 */
+            max-width: 1400px;
+            height: calc(100vh - 40px);
+            align-items: stretch;
         }
 
         /* --- 左側：輸入區 --- */
         #input-section {
-            flex: 0 0 260px; /* 固定寬度 */
+            flex: 0 0 260px;
             background-color: var(--card-bg);
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
             display: flex;
-            flex-direction: column; /* 垂直排列 */
+            flex-direction: column;
         }
         #input-section h4 { margin-top: 0; margin-bottom: 10px;}
-        #pgn-text-input { width: 100%; flex-grow: 1; /* 佔滿剩餘空間 */ min-height: 150px; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; margin-bottom: 15px; }
-        #analyze-button { font-size: 1.1em; padding: 12px 16px; width: 100%; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; margin-top: auto; /* 推到底部 */ }
+        #pgn-text-input { width: 100%; flex-grow: 1; min-height: 150px; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 4px; padding: 8px; margin-bottom: 15px; }
+        #analyze-button { font-size: 1.1em; padding: 12px 16px; width: 100%; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; margin-top: auto; }
         #analyze-button:hover { background-color: #1d4ed8; }
 
         /* --- 中間：棋盤區 --- */
         #board-section {
-            flex: 1; /* 自動填滿中間 */
+            flex: 1;
             display: flex;
-            flex-direction: column; /* 垂直排列棋盤和選項 */
-            justify-content: center; /* 垂直置中 */
-            align-items: center; /* 水平置中 */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         #board-card {
             background-color: var(--card-bg);
@@ -88,15 +87,35 @@
             width: fit-content;
             height: fit-content;
         }
-        #myBoard {
-            width: 560px; /* 主要棋盤大小 */
-            /* height: 560px; */
+        
+        /* --- 棋盤與箭頭容器 --- */
+        #board-container-wrapper {
+            position: relative;
+            width: 560px;
+            height: 560px;
         }
-        #board-options { /* 包住下拉選單的 div */
+        #myBoard {
+            width: 100%;
+            height: 100%;
+        }
+        /* SVG 箭頭層 (覆蓋在棋盤上) */
+        #arrow-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 讓滑鼠事件穿透 SVG */
+            
+            /* 【修改】z-index: 2 (在棋子之下，但在黃色高亮之上) */
+            z-index: 2; 
+        }
+
+        #board-options {
              margin-top: 15px;
              display: flex;
-             justify-content: center; /* 置中下拉選單 */
-             gap: 20px; /* 選單間距 */
+             justify-content: center;
+             gap: 20px;
              width: 100%;
         }
          #board-options label {
@@ -110,27 +129,33 @@
              border: 1px solid var(--border-color);
         }
 
-
         /* --- 右側：分析區 --- */
         #sidebar {
-            flex: 0 0 380px; /* 固定寬度 */
+            flex: 0 0 380px;
             background-color: var(--card-bg);
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
-            display: flex; /* 使用 flexbox 排列內部元素 */
-            flex-direction: column; /* 垂直排列 */
-            overflow: hidden; /* 防止內容溢出 */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        #analysis-controls { /* 包住所有右側控制項 */
+        #analysis-controls {
              display: flex;
              flex-direction: column;
-             flex-grow: 1; /* 佔滿 sidebar 空間 */
-             min-height: 0; /* 允許 analysis-container 縮小 */
+             flex-grow: 1;
+             min-height: 0;
         }
 
-        #opening-name-display { text-align: center; color: var(--text-secondary); margin-bottom: 10px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #opening-name-display {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-style: italic;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
         #win-rate-text { font-size: 1.1em; font-weight: bold; margin-bottom: 8px; text-align: center; color: var(--text-secondary); }
         #win-rate-bar-container { width: 100%; height: 20px; background-color: #27272a; border-radius: 4px; overflow: hidden; border: 1px solid #555; display: flex; margin-bottom: 10px;}
         #white-bar { width: 50%; height: 100%; background-color: #f9fafb; transition: width 0.3s ease-out; }
@@ -141,51 +166,120 @@
         #move-controls button:hover { background-color: var(--bg-color); }
 
         #summary-toggle { cursor: pointer; margin-top: 10px; margin-bottom: 5px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; font-size: 1.1em; }
-        #analysis-summary-content { padding: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; max-height: 150px; overflow-y: auto;} /* 限制高度並允許滾動 */
+        #analysis-summary-content { padding: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); border-radius: 6px; margin-bottom: 10px; font-size: 0.9em; max-height: 150px; overflow-y: auto;}
         .summary-player-section { margin-bottom: 5px; }
-        .summary-player-section strong { font-size: 1em; } /* 調整大小 */
-        .summary-player-section ul { list-style-type: none; padding-left: 10px; margin: 3px 0 0 0; font-size: 0.85em; } /* 調整大小 */
+        .summary-player-section strong { font-size: 1em; }
+        .summary-player-section ul { list-style-type: none; padding-left: 10px; margin: 3px 0 0 0; font-size: 0.85em; }
 
-        #analysis-container { border: 1px solid var(--border-color); width: 100%; flex-grow: 1; /* 佔滿剩餘垂直空間 */ overflow-y: auto; border-radius: 6px; min-height: 200px; /* 設定最小高度 */ }
+        #analysis-container { border: 1px solid var(--border-color); width: 100%; flex-grow: 1; overflow-y: auto; border-radius: 6px; min-height: 200px; }
         #analysis-container h3 { margin: 10px; font-size: 1.1em; }
         #analysis-container p { padding: 10px; color: var(--text-secondary); }
 
-        /* --- 棋步列表樣式 (兩欄) --- */
-        .move-list-container { font-size: 0.85em; } /* 稍微縮小字體 */
+        /* --- 棋步列表樣式 --- */
+        .move-list-container { font-size: 0.85em; }
         .move-pair { display: flex; border-bottom: 1px solid var(--border-color); cursor: pointer; }
         .move-pair:last-child { border-bottom: none; }
         .move-pair:hover { background-color: var(--bg-color); }
         .move-item-col.selected { background-color: var(--blue-light); }
-        .move-number { flex: 0 0 25px; /* 縮小寬度 */ padding: 6px 4px; text-align: right; color: var(--text-secondary); border-right: 1px solid var(--border-color); }
-        .move-item-col { flex: 1; padding: 6px 8px; position: relative; } /* 減少 padding */
+        .move-number { flex: 0 0 25px; padding: 6px 4px; text-align: right; color: var(--text-secondary); border-right: 1px solid var(--border-color); }
+        .move-item-col { flex: 1; padding: 6px 8px; position: relative; }
         .move-item-col:first-of-type { border-right: 1px solid var(--border-color); }
         .move-san { font-weight: bold; }
         .move-col-analysis { display: block; margin-top: 3px; font-size: 0.9em; }
-        .analysis-detail, .analysis-detail-good { padding: 3px 5px; border-radius: 4px; margin-top: 3px; }
-        .analysis-detail-good { color: #16a34a; font-weight: bold; }
+        .analysis-detail, .analysis-detail-good {
+            padding: 3px 5px;
+            border-radius: 4px;
+            margin-top: 3px;
+            font-weight: bold;
+            color: var(--text-primary); /* 改回預設黑色文字 */
+        }
+        
+        /* 2. 為新的 class 添加背景顏色 */
+
+        /* 最佳 (Best Move) - 淺藍色背景 */
+        .analysis-detail-good.quality-best {
+            background-color: var(--blue-light);
+            border: 1px solid #bfdbfe;
+        }
+
+        /* 太棒了 (Excellent) - 淺綠色背景 */
+        .analysis-detail-good.quality-excellent {
+            background-color: #dcfce7;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* 很棒 (Good) & 開局 (Book) - 淺灰色背景 */
+        .analysis-detail-good.quality-good {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            font-weight: normal; /* "Good" 和 "Book" 不需要粗體 */
+        }
         .move-item-col.inaccuracy .analysis-detail { background-color: var(--yellow-light); border: 1px solid #fde047; }
         .move-item-col.mistake .analysis-detail { background-color: var(--orange-light); border: 1px solid #fcd34d; }
         .move-item-col.blunder .analysis-detail { background-color: var(--red-light); border: 1px solid #fda4af; }
 
-        /* --- 棋盤格子 & 高亮樣式 --- */
-        /* 使用高優先級選擇器 + !important */
-        div#myBoard.board-theme-wood div[class*="white-"] { background-color: #f0d9b5 !important; color: #b58863 !important; }
+/* --- 棋盤格子樣式 --- */
+        /* 使用 [class*="..."] 選擇器來匹配 chessboard.js 的動態 class 名稱
+           並使用 !important 來確保最高優先級。
+        */
         div#myBoard.board-theme-wood div[class*="black-"] { background-color: #b58863 !important; color: #f0d9b5 !important; }
-        div#myBoard.board-theme-green div[class*="white-"] { background-color: #eeeed2 !important; color: #769656 !important; }
+        div#myBoard.board-theme-wood div[class*="white-"] { background-color: #f0d9b5 !important; color: #b58863 !important; }
+        
         div#myBoard.board-theme-green div[class*="black-"] { background-color: #769656 !important; color: #eeeed2 !important; }
-        div#myBoard.board-theme-blue div[class*="white-"] { background-color: #dee3e6 !important; color: #8ca2ad !important; }
+        div#myBoard.board-theme-green div[class*="white-"] { background-color: #eeeed2 !important; color: #769656 !important; }
+        
         div#myBoard.board-theme-blue div[class*="black-"] { background-color: #8ca2ad !important; color: #dee3e6 !important; }
-        div#myBoard.board-theme-grey div[class*="white-"] { background-color: #f0f0f0 !important; color: #ababab !important; }
+        div#myBoard.board-theme-blue div[class*="white-"] { background-color: #dee3e6 !important; color: #8ca2ad !important; }
+        
         div#myBoard.board-theme-grey div[class*="black-"] { background-color: #ababab !important; color: #f0f0f0 !important; }
+        div#myBoard.board-theme-grey div[class*="white-"] { background-color: #f0f0f0 !important; color: #ababab !important; }
 
-        .highlight-best-move { background-color: var(--green-highlight) !important; box-shadow: inset 0 0 3px 2px var(--green-highlight) !important; } /* 加 !important */
-        .highlight-actual-move { background-color: rgba(59, 130, 246, 0.3) !important; box-shadow: inset 0 0 3px 2px rgba(59, 130, 246, 0.3) !important; } /* 加 !important */
+
+        /* --- 高亮樣式 --- */
+        /*
+         * 【最終解決方案 - v6】
+         * 解決「棋子被蓋住」的 CSS 堆疊問題
+        */
+        
+        /* 1. 讓格子成為定位基準，並建立一個新的「堆疊上下文」
+         * 'isolation: isolate' 是關鍵。
+         * 它讓這個 div 成為一個獨立的圖層世界。
+        */
+        .highlight-last-move {
+            position: relative; 
+            isolation: isolate; /* 建立新的堆疊上下文 */
+        }
+        
+        /* 2. 創建螢光筆圖層 */
+        .highlight-last-move::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            
+            background-color: rgba(255, 235, 59, 0.7); 
+            
+            /* * 將 z-index 設為 -1。
+             * 因為 'isolation: isolate' 的關係，
+             * -1 會將此圖層放在「父層的背景之上」
+             * 但在「父層的內容 (棋子<img>) 之下」。
+             * 這就是我們要的！
+            */
+            z-index: -1; 
+        }
+
+        /* 3. 【重要】
+         * 請「刪除」掉您 CSS 中任何有關
+         * .highlight-last-move img { ... } 的規則。
+         * (也就是 v5 版本的第三點)
+        */
 
     </style>
 </head>
 <body>
 
-    <!-- 【新】調整 HTML 結構 -->
     <div id="app-container">
 
         <!-- 左側：輸入區 -->
@@ -201,28 +295,42 @@
         <!-- 中間：棋盤區 -->
         <div id="board-section">
             <div id="board-card">
-                <div id="myBoard"></div> <!-- 棋盤本身 -->
+                <!-- 棋盤與箭頭的組合容器 -->
+                <div id="board-container-wrapper">
+                    <div id="myBoard"></div> 
+                    <!-- SVG 箭頭層 -->
+                    <svg id="arrow-overlay" width="560" height="560" viewBox="0 0 560 560">
+                        <defs>
+                            <marker id="arrowhead-green" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+                                <polygon points="0 0, 4 2, 0 4" fill="#22c55e" />
+                            </marker>
+                            <marker id="arrowhead-orange" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+                                <polygon points="0 0, 4 2, 0 4" fill="#f97316" />
+                            </marker>
+                        </defs>
+                        </svg>
+                </div>
                 <!-- 選項區 -->
                 <div id="board-options">
-                     <div>
-                         <label for="board-theme-select">棋盤顏色:</label>
-                         <select id="board-theme-select">
-                             <option value="wood">木紋</option>
-                             <option value="green">綠色</option>
-                             <option value="blue">藍色</option>
-                             <option value="grey">灰色</option>
-                         </select>
-                     </div>
-                     <div>
-                         <label for="piece-theme-select">棋子樣式:</label>
-                         <select id="piece-theme-select">
-                             <option value="wikipedia">維基</option>
-                             <option value="neo">Neo</option>
-                         </select>
-                     </div>
+                      <div>
+                          <label for="board-theme-select">棋盤顏色:</label>
+                          <select id="board-theme-select">
+                              <option value="wood">木紋</option>
+                              <option value="green" selected>綠色</option>
+                              <option value="blue">藍色</option>
+                              <option value="grey">灰色</option>
+                          </select>
+                      </div>
+                      <div>
+                          <label for="piece-theme-select">棋子樣式:</label>
+                          <select id="piece-theme-select">
+                              <option value="wikipedia">維基</option>
+                              <option value="neo">Neo</option>
+                          </select>
+                      </div>
                 </div>
-            </div> <!-- 結束 board-card -->
-        </div> <!-- 結束 board-section -->
+            </div> 
+        </div> 
 
         <!-- 右側：分析區 -->
         <div id="sidebar">
@@ -251,10 +359,10 @@
                     <h3>分析結果</h3>
                     <p>請上傳 PGN 或貼上內容分析。</p>
                 </div>
-            </div><!-- 結束 analysis-controls -->
-        </div> <!-- 結束 sidebar -->
+            </div>
+        </div> 
 
-    </div> <!-- 結束 #app-container -->
+    </div> 
 
     <!-- JS 函式庫 -->
     <script src="js/jquery.min.js"></script>
